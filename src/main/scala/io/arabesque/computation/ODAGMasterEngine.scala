@@ -43,11 +43,11 @@ trait ODAGMasterEngine [
   def config: SparkConfiguration[E]
 
   // #reporting
-  /*
+  //*
   var reportsFilePath: String = _
   var generateReports: Boolean = false
   //
-  */
+  //*/
 
   import ODAGMasterEngine._
 
@@ -81,15 +81,14 @@ trait ODAGMasterEngine [
     }
 
     // #reporting
-    /*
+    //*
     // set reports path
     if(config.getBoolean("reports_active", false)) {
       reportsFilePath = config.getString("reports_path", Paths.get("").toAbsolutePath.normalize.toString)
       reportsFilePath += "/Master/"
       generateReports = true
     }
-    //
-    */
+    //*/
 
     // master computation
     masterComputation = config.createMasterComputation()
