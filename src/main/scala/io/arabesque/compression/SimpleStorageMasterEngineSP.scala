@@ -65,6 +65,8 @@ class SimpleStorageMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[
     )
 
     val startTime = System.currentTimeMillis
+    val GB:Double = 1024 * 1024 * 1024
+    val MB:Double = 1024 * 1024
 
     do {
       // #reporting
@@ -98,6 +100,10 @@ class SimpleStorageMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[
 
       val _aggAccums = aggAccums
       val superstepStart = System.currentTimeMillis
+
+      val broadcastStorageSize: Double = SizeEstimator.estimate(aggregatedOdagsBc) / MB
+
+      println("Storage size = " + broadcastStorageSize + " in super_step " + superstep)
 
       val execEngines = getExecutionEngines (
         superstepRDD = superstepRDD,
@@ -134,7 +140,7 @@ class SimpleStorageMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[
 
           previousAggregationsBc.unpersist()
           previousAggregationsBc = sc.broadcast (previousAggregations)
-
+          //print("Previous aggregation size = (" + SizeEstimator.estimate(previousAggregationsBc) + ") in super_step (" + superstep + ")")
         case Failure(e) =>
           logError (s"Error in collecting aggregations: ${e.getMessage}")
           throw e
@@ -269,22 +275,18 @@ class SimpleStorageMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[
         var readingStorageSize: Long = 0
         if(storage.isInstanceOf[GenericSimpleDomainStorageReadOnly]) {
           readingStorageSize = storage.asInstanceOf[GenericSimpleDomainStorageReadOnly].getReadingStorageSize
-          //println("Yes it is GenericSimpleDomainStorageReadOnly")
         }
         else
           if(storage.isInstanceOf[PrimitiveSimpleDomainStorageReadOnly]) {
             readingStorageSize = storage.asInstanceOf[PrimitiveSimpleDomainStorageReadOnly].getReadingStorageSize
-            //println("Yes it is PrimitiveSimpleDomainStorageReadOnly")
           }
           else
           if(storage.isInstanceOf[UltraPrimitiveSimpleDomainStorageReadOnly]) {
             readingStorageSize = storage.asInstanceOf[UltraPrimitiveSimpleDomainStorageReadOnly].getReadingStorageSize
-            //println("Yes it is UltraPrimitiveSimpleDomainStorageReadOnly")
           }
           else
           if(storage.isInstanceOf[UPSDomainStorageReadOnly]) {
             readingStorageSize = storage.asInstanceOf[UPSDomainStorageReadOnly].getReadingStorageSize
-            //println("Yes it is UPSDomainStorageReadOnly")
           }
         masterReport.storageSize.add( storageEstimate - readingStorageSize )
         masterReport.patternSize.add( patternEstimate )
@@ -294,6 +296,7 @@ class SimpleStorageMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[
         i += 1
       })
 
+      masterReport.broadcastStorageSize = broadcastStorageSize
       masterReport.endTime = System.currentTimeMillis()
       if(generateReports)
         masterReport.saveReport(reportsFilePath)

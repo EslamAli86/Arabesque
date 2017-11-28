@@ -90,6 +90,7 @@ public abstract class BasicODAGStash<O extends BasicODAG, S extends BasicODAGSta
             // null and let the while begin again (simulate recursive call without the stack
             // building overhead).
             else {
+               // #Method_ODAG
                PrimitiveODAGDomainStorageReadOnly.Reader reader = (PrimitiveODAGDomainStorageReadOnly.Reader)currentReader;
                // #reporting
                stashReports.add(reader.getStorageReport());

@@ -13,6 +13,9 @@ public class MasterReport extends EngineReport {
     public ArrayList<Long> calculatedSize = new ArrayList<Long>();
     public ArrayList<Long> numberOfWordsInDomains = new ArrayList<Long>();
     public ArrayList<Long> numberOfWordsInConnections = new ArrayList<Long>();
+
+    public Double broadcastStorageSize = 0.0;
+
     protected long superstepStorageSize = 0;
     protected long superstepPatternSize = 0;
     protected long superstepCalculatedSize = 0;
@@ -49,6 +52,7 @@ public class MasterReport extends EngineReport {
 
         str.append("{\"super_step\":" + superstep + ", ");
         str.append("\"runtime\":" + getRuntime() + ", ");
+        str.append("\"BroadcastSize\":" + broadcastStorageSize + ", ");
         str.append("\"TotalStorageSize\":" + superstepStorageSize + ", ");
         str.append("\"TotalPatternSize\":" + superstepPatternSize + ", ");
         str.append("\"TotalCalculatedSize\":" + superstepCalculatedSize + ", ");

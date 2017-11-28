@@ -66,6 +66,8 @@ class ODAGMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[E])
     )
 
     val startTime = System.currentTimeMillis
+    val GB:Double = 1024 * 1024 * 1024
+    val MB:Double = 1024 * 1024
 
     do {
       // #reporting
@@ -96,6 +98,10 @@ class ODAGMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[E])
 
       val _aggAccums = aggAccums
       val superstepStart = System.currentTimeMillis
+
+      val broadcastStorageSize: Double = SizeEstimator.estimate(aggregatedOdagsBc) / MB
+
+      println("Storage size = " + broadcastStorageSize + " in super_step " + superstep)
 
       val execEngines = getExecutionEngines (
         superstepRDD = superstepRDD,
@@ -132,7 +138,7 @@ class ODAGMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[E])
 
           previousAggregationsBc.unpersist()
           previousAggregationsBc = sc.broadcast (previousAggregations)
-
+          //println("Previous aggregation size = (" + SizeEstimator.estimate(previousAggregationsBc) + ") in super_step (" + superstep + ")")
         case Failure(e) =>
           logError (s"Error in collecting aggregations: ${e.getMessage}")
           throw e
@@ -263,6 +269,7 @@ class ODAGMasterEngineSP [E <: Embedding] (_config: SparkConfiguration[E])
         i += 1
       })
 
+      masterReport.broadcastStorageSize = broadcastStorageSize
       masterReport.endTime = System.currentTimeMillis()
       if(generateReports)
         masterReport.saveReport(reportsFilePath)
